@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mortal Shoes - Sign Up</title>
+</head>
+
+<body>
+
+<h1>Mortal Shoes 👟</h1>
+<h2>Sign Up</h2>
+
+<input id="user" placeholder="Username"><br><br>
+<input id="pass" type="password" placeholder="Password"><br><br>
+
+<button onclick="signup()">Create Account</button>
+
+<p>Already have account?</p>
+<a href="login.html">Login</a>
+
+<script>
+
+function signup(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+localStorage.setItem("user",u)
+localStorage.setItem("pass",p)
+
+alert("Account Created")
+
+location="login.html"
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+
+<style>
+
+body{
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center
+}
+
+input,select,button{
+padding:10px;
+margin:5px;
+border-radius:5px
+}
+
+button{
+background:red;
+color:white;
+border:none;
+cursor:pointer
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Admin Panel</h1>
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name"><br>
+
+<input id="actualPrice" placeholder="Actual Price"><br>
+
+<input id="discountPrice" placeholder="Discount Price"><br>
+
+<select id="category">
+
+<option value="sneakers">Sneakers</option>
+<option value="shoes">Shoes</option>
+<option value="sports">Sports Shoes</option>
+<option value="premium">Premium Shoes</option>
+
+</select><br>
+
+<select id="rating">
+
+<option value="5">5 Stars</option>
+<option value="4">4 Stars</option>
+<option value="3">3 Stars</option>
+<option value="2">2 Stars</option>
+<option value="1">1 Star</option>
+
+</select><br>
+
+<input type="file" id="image"><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+<h2>Festival Offer</h2>
+
+<input id="offerName" placeholder="Festival Name"><br>
+<input id="offerPercent" placeholder="Discount %"><br>
+<input id="minPrice" placeholder="Min Price"><br>
+<input id="maxPrice" placeholder="Max Price"><br>
+<input id="hours" placeholder="Offer Duration (hours)"><br>
+
+<button onclick="setOffer()">Activate Offer</button>
+<button onclick="removeOffer()">Remove Offer</button>
+
+<script>
+
+let products=JSON.parse(localStorage.getItem("products"))||[]
+
+function addProduct(){
+
+let name=document.getElementById("name").value
+let actualPrice=document.getElementById("actualPrice").value
+let discountPrice=document.getElementById("discountPrice").value
+let category=document.getElementById("category").value
+let rating=document.getElementById("rating").value
+let file=document.getElementById("image").files[0]
+
+if(!name || !actualPrice || !file){
+alert("Fill fields")
+return
+}
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+products.push({
+
+name:name,
+actualPrice:actualPrice,
+discountPrice:discountPrice,
+category:category,
+rating:rating,
+image:reader.result,
+time:Date.now()
+
+})
+
+localStorage.setItem("products",JSON.stringify(products))
+
+alert("Product Added")
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+/* FESTIVAL OFFER */
+
+function setOffer(){
+
+let name=document.getElementById("offerName").value
+let percent=Number(document.getElementById("offerPercent").value)
+let min=Number(document.getElementById("minPrice").value)
+let max=Number(document.getElementById("maxPrice").value)
+let hours=Number(document.getElementById("hours").value)
+
+let offer={
+
+name:name,
+percent:percent,
+min:min,
+max:max,
+endTime:Date.now()+(hours*3600000)
+
+}
+
+localStorage.setItem("festivalOffer",JSON.stringify(offer))
+
+alert("Offer Activated")
+
+}
+
+function removeOffer(){
+
+localStorage.removeItem("festivalOffer")
+
+alert("Offer Removed")
+
+}
+
+</script>
+
+</body>
+</html>

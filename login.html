@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+</head>
+
+<body>
+
+<h1>Mortal Shoes 👟</h1>
+
+<input id="user" placeholder="Username"><br><br>
+<input id="pass" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<script>
+
+function login(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+if(
+u==localStorage.getItem("user") &&
+p==localStorage.getItem("pass")
+){
+location="index.html"
+}
+else{
+alert("Wrong Login")
+}
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cart</title>
+</head>
+
+<body>
+<h1>Your Cart 🛒</h1>
+<div id="cart"></div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let box = document.getElementById("cart");
+
+if(cart.length === 0){
+    box.innerHTML = "<p>Your cart is empty 😔</p>";
+} else {
+    cart.forEach((item,i)=>{
+        box.innerHTML+=`
+        <p>
+        ${item.name} - ₹${item.price}
+        <button onclick="remove(${i})">Remove</button>
+        </p>
+        `;
+    });
+}
+
+function remove(i){
+    cart.splice(i,1);
+    localStorage.setItem("cart",JSON.stringify(cart));
+    location.reload();
+}
+</script>
+</body>
+</html>

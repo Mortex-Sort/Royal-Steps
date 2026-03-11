@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login - Mortal Shoes</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        button {
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Mortal Shoes Admin Login 👟</h1>
+
+<input id="user" placeholder="Admin Username"><br>
+<input id="pass" type="password" placeholder="Admin Password"><br><br>
+<button onclick="login()">Login</button>
+
+<script>
+function login(){
+    let u = document.getElementById("user").value;
+    let p = document.getElementById("pass").value;
+
+    // ✅ Fixed admin credentials
+    if(u === "admin" && p === "mortal123"){
+        localStorage.setItem("admin","true");
+        location="admin.html";
+    } else {
+        alert("Wrong Admin Login ❌");
+    }
+}
+</script>
+
+</body>
+</html>
