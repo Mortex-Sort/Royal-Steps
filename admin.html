@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+
+<style>
+
+body{
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center
+}
+
+input,select,button{
+padding:10px;
+margin:5px;
+border-radius:5px
+}
+
+button{
+background:red;
+color:white;
+border:none;
+cursor:pointer
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Admin Panel</h1>
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name"><br>
+
+<input id="price" placeholder="Price"><br>
+
+<select id="category">
+<option value="sneakers">Sneakers</option>
+<option value="shoes">Shoes</option>
+<option value="sports">Sports Shoes</option>
+<option value="premium">Premium Shoes</option>
+</select><br>
+
+<input type="file" id="image"><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+<script>
+
+const token="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"
+const owner="Mortex-Sort"
+const repo="Royal-Steps"
+const branch="main"
+
+async function addProduct(){
+
+let name=document.getElementById("name").value
+let price=document.getElementById("price").value
+let category=document.getElementById("category").value
+let file=document.getElementById("image").files[0]
+
+if(!name || !price || !file){
+alert("Fill all fields")
+return
+}
+
+let base64=await toBase64(file)
+
+let imageName=Date.now()+"_"+file.name
+
+await uploadImage(base64,imageName)
+
+let data=await getJSON()
+
+let products=[]
+let sha=null
+
+if(data){
+products=JSON.parse(atob(data.content))
+sha=data.sha
+}
+
+products.push({
+
+name:name,
+price:price,
+category:category,
+image:`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/images/${imageName}`
+
+})
+
+await updateJSON(products,sha)
+
+alert("Product Added Successfully")
+
+}
+
+function toBase64(file){
+
+return new Promise((resolve,reject)=>{
+
+let reader=new FileReader()
+
+reader.readAsDataURL(file)
+
+reader.onload=()=>resolve(reader.result.split(",")[1])
+
+reader.onerror=error=>reject(error)
+
+})
+
+}
+
+async function uploadImage(base64,imageName){
+
+await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/images/${imageName}`,{
+
+method:"PUT",
+
+headers:{
+"Authorization":"Bearer "+token,
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+message:"upload product image",
+content:base64,
+branch:branch
+
+})
+
+})
+
+}
+
+async function getJSON(){
+
+let res=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/makhna.json`,{
+
+headers:{
+"Authorization":"Bearer "+token
+}
+
+})
+
+if(res.status===404) return null
+
+return await res.json()
+
+}
+
+async function updateJSON(products,sha){
+
+let content=btoa(JSON.stringify(products,null,2))
+
+await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/makhna.json`,{
+
+method:"PUT",
+
+headers:{
+"Authorization":"Bearer "+token,
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+message:"update products",
+content:content,
+sha:sha,
+branch:branch
+
+})
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
