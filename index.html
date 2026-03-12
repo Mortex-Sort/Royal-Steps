@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mortal Shoes</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:#111;
+color:white;
+}
+
+/* NAVBAR */
+
+nav{
+display:flex;
+justify-content:space-between;
+padding:20px;
+background:black;
+}
+
+.logo{
+font-size:24px;
+font-weight:bold;
+color:red;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+margin-left:15px;
+}
+
+/* OFFER BANNER */
+
+#offerBanner{
+background:linear-gradient(90deg,#ff0000,#ff7b00);
+color:white;
+padding:12px;
+font-weight:bold;
+font-size:18px;
+}
+
+/* SEARCH */
+
+.search-box{
+text-align:center;
+margin-top:15px;
+}
+
+.search-box input{
+padding:10px;
+width:60%;
+border-radius:5px;
+border:none;
+}
+
+/* CATEGORY BAR */
+
+.category-bar{
+text-align:center;
+margin-top:15px;
+}
+
+.category-bar button{
+margin:5px;
+padding:8px 14px;
+border:none;
+background:red;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+/* SORT */
+
+.sort-box{
+text-align:center;
+margin-top:10px;
+}
+
+/* PRODUCTS */
+
+.products{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
+padding:40px;
+}
+
+.card{
+background:#1c1c1c;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+
+.card img{
+width:100%;
+border-radius:10px;
+}
+
+button{
+margin-top:10px;
+padding:10px 15px;
+background:red;
+border:none;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+.cart-btn{
+position:fixed;
+bottom:20px;
+right:20px;
+background:red;
+padding:15px;
+border-radius:50%;
+font-size:22px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+
+<div class="logo">Mortal Shoes</div>
+
+<div>
+<a href="index.html">Home</a>
+<a href="cart.html">Cart</a>
+<a href="login.html">Login</a>
+<a href="Signup.html">Signup</a>
+<a href="admin_login.html">Admin</a>
+</div>
+
+</nav>
+
+<div id="offerBanner"></div>
+
+<div class="search-box">
+<input type="text" id="search" placeholder="Search shoes..." onkeyup="searchProducts()">
+</div>
+
+<div class="category-bar">
+
+<button onclick="filterCategory('all')">All</button>
+<button onclick="filterCategory('sneakers')">Sneakers</button>
+<button onclick="filterCategory('shoes')">Shoes</button>
+<button onclick="filterCategory('sports')">Sports Shoes</button>
+<button onclick="filterCategory('premium')">Premium Shoes</button>
+<button onclick="showNew()">Newly Added</button>
+
+</div>
+
+<div class="sort-box">
+
+<select onchange="sortProducts(this.value)">
+
+<option value="">Sort By Price</option>
+<option value="low">Low → High</option>
+<option value="high">High → Low</option>
+
+</select>
+
+</div>
+
+<div class="products" id="products"></div>
+
+<a href="cart.html" class="cart-btn">🛒</a>
+
+<script>
+
+let products = JSON.parse(localStorage.getItem("products")) || []
+let cart = JSON.parse(localStorage.getItem("cart")) || []
+
+let festivalOffer = JSON.parse(localStorage.getItem("festivalOffer"))
+
+/* OFFER BANNER WITH MARQUEE */
+
+if(festivalOffer){
+
+if(Date.now() > festivalOffer.endTime){
+
+localStorage.removeItem("festivalOffer")
+
+}else{
+
+document.getElementById("offerBanner").innerHTML =
+
+`<marquee>
+
+🔥 ${festivalOffer.name} SALE 🔥 
+${festivalOffer.percent}% OFF on selected shoes |
+Ends in <span id="timer"></span>
+
+</marquee>`
+
+startTimer()
+
+}
+
+}
+
+/* TIMER */
+
+function startTimer(){
+
+let end = festivalOffer.endTime
+
+setInterval(()=>{
+
+let now = Date.now()
+
+let diff = end - now
+
+if(diff<=0){
+
+document.getElementById("timer").innerHTML="Expired"
+
+return
+
+}
+
+let h=Math.floor(diff/3600000)
+let m=Math.floor((diff%3600000)/60000)
+let s=Math.floor((diff%60000)/1000)
+
+document.getElementById("timer").innerHTML=
+h+"h "+m+"m "+s+"s"
+
+},1000)
+
+}
+
+/* SHOW PRODUCTS */
+
+function showProducts(list){
+
+let box=document.getElementById("products")
+
+box.innerHTML=""
+
+list.forEach((p,i)=>{
+
+let price=p.discountPrice?Number(p.discountPrice):Number(p.actualPrice)
+
+if(festivalOffer){
+
+if(price>=festivalOffer.min && price<=festivalOffer.max){
+
+price = price - (price*festivalOffer.percent/100)
+
+}
+
+}
+
+let priceHTML=""
+
+if(p.discountPrice){
+
+priceHTML=`
+<span style="color:lightgray;text-decoration:line-through">
+₹${p.actualPrice}
+</span>
+
+<span style="font-weight:bold;margin-left:6px">
+₹${price}
+</span>
+`
+
+}else{
+
+priceHTML=`
+<span style="font-weight:bold">
+₹${price}
+</span>
+`
+
+}
+
+let stars="⭐".repeat(p.rating)
+
+box.innerHTML+=`
+
+<div class="card">
+
+<img src="${p.image}">
+
+<h3>${p.name}</h3>
+
+<div>${stars}</div>
+
+<p>${priceHTML}</p>
+
+<button onclick="addCart(${i})">Add To Cart</button>
+
+</div>
+
+`
+
+})
+
+}
+
+/* CART */
+
+function addCart(i){
+
+cart.push(products[i])
+
+localStorage.setItem("cart",JSON.stringify(cart))
+
+alert("Added to cart")
+
+}
+
+/* SEARCH */
+
+function searchProducts(){
+
+let text=document.getElementById("search").value.toLowerCase()
+
+let filtered=products.filter(p=>
+p.name.toLowerCase().includes(text)
+)
+
+showProducts(filtered)
+
+}
+
+/* CATEGORY */
+
+function filterCategory(cat){
+
+if(cat==="all"){
+
+showProducts(products)
+return
+
+}
+
+let filtered=products.filter(p=>
+p.category===cat
+)
+
+showProducts(filtered)
+
+}
+
+/* NEWLY ADDED */
+
+function showNew(){
+
+let now=Date.now()
+
+let filtered=products.filter(p=>
+now - p.time < 86400000
+)
+
+showProducts(filtered)
+
+}
+
+/* PRICE SORT */
+
+function sortProducts(type){
+
+let sorted=[...products]
+
+sorted.sort((a,b)=>{
+
+let priceA=a.discountPrice?Number(a.discountPrice):Number(a.actualPrice)
+let priceB=b.discountPrice?Number(b.discountPrice):Number(b.actualPrice)
+
+if(type==="low") return priceA-priceB
+if(type==="high") return priceB-priceA
+
+})
+
+showProducts(sorted)
+
+}
+
+showProducts(products)
+
+</script>
+
+</body>
+</html>

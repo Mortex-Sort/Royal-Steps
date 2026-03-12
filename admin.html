@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+
+<style>
+
+body{
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center
+}
+
+input,select,button{
+padding:10px;
+margin:5px;
+border-radius:5px
+}
+
+button{
+background:red;
+color:white;
+border:none;
+cursor:pointer
+}
+
+.product{
+border:1px solid white;
+padding:10px;
+margin:10px
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Admin Panel</h1>
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name"><br>
+
+<input id="actualPrice" placeholder="Actual Price"><br>
+
+<input id="discountPrice" placeholder="Discount Price (optional)"><br>
+
+<select id="category">
+
+<option value="sneakers">Sneakers</option>
+<option value="shoes">Shoes</option>
+<option value="sports">Sports Shoes</option>
+<option value="premium">Premium Shoes</option>
+
+</select><br>
+
+<select id="rating">
+
+<option value="5">⭐⭐⭐⭐⭐</option>
+<option value="4">⭐⭐⭐⭐</option>
+<option value="3">⭐⭐⭐</option>
+<option value="2">⭐⭐</option>
+<option value="1">⭐</option>
+
+</select><br>
+
+<input type="file" id="image"><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+<hr>
+
+<h2>Festival Special Offer</h2>
+
+<input id="offerName" placeholder="Festival Name"><br>
+
+<input id="offerPercent" placeholder="Discount %"><br>
+
+<input id="minPrice" placeholder="Min Price"><br>
+
+<input id="maxPrice" placeholder="Max Price"><br>
+
+<label>Offer End Date & Time</label><br>
+
+<input type="datetime-local" id="offerEnd"><br>
+
+<button onclick="setOffer()">Activate Offer</button>
+
+<button onclick="removeOffer()">Remove Offer</button>
+
+<hr>
+
+<h2>All Products</h2>
+
+<div id="productList"></div>
+
+<script>
+
+let products = JSON.parse(localStorage.getItem("products")) || []
+
+/* ADD PRODUCT */
+
+function addProduct(){
+
+let name=document.getElementById("name").value
+let actualPrice=document.getElementById("actualPrice").value
+let discountPrice=document.getElementById("discountPrice").value
+let category=document.getElementById("category").value
+let rating=document.getElementById("rating").value
+let file=document.getElementById("image").files[0]
+
+if(!name || !actualPrice || !file){
+alert("Fill required fields")
+return
+}
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+products.push({
+
+name:name,
+actualPrice:actualPrice,
+discountPrice:discountPrice,
+category:category,
+rating:rating,
+image:reader.result,
+time:Date.now()
+
+})
+
+localStorage.setItem("products",JSON.stringify(products))
+
+alert("Product Added")
+
+showProducts()
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+/* SHOW PRODUCTS */
+
+function showProducts(){
+
+let box=document.getElementById("productList")
+
+box.innerHTML=""
+
+products.forEach((p,i)=>{
+
+box.innerHTML+=`
+
+<div class="product">
+
+<img src="${p.image}" width="80"><br>
+
+<h3>${p.name}</h3>
+
+<p>Actual Price: ₹${p.actualPrice}</p>
+
+<p>Discount Price: ₹${p.discountPrice || "None"}</p>
+
+<p>Category: ${p.category}</p>
+
+<button onclick="deleteProduct(${i})">
+Delete
+</button>
+
+</div>
+
+`
+
+})
+
+}
+
+/* DELETE PRODUCT */
+
+function deleteProduct(i){
+
+products.splice(i,1)
+
+localStorage.setItem("products",JSON.stringify(products))
+
+showProducts()
+
+}
+
+/* ACTIVATE OFFER */
+
+function setOffer(){
+
+let name=document.getElementById("offerName").value
+let percent=Number(document.getElementById("offerPercent").value)
+let min=Number(document.getElementById("minPrice").value)
+let max=Number(document.getElementById("maxPrice").value)
+let endDate=document.getElementById("offerEnd").value
+
+if(!name || !percent || !endDate){
+
+alert("Fill Offer Details")
+return
+
+}
+
+let offer={
+
+name:name,
+percent:percent,
+min:min,
+max:max,
+endTime:new Date(endDate).getTime()
+
+}
+
+localStorage.setItem("festivalOffer",JSON.stringify(offer))
+
+alert("Festival Offer Activated")
+
+}
+
+/* REMOVE OFFER */
+
+function removeOffer(){
+
+localStorage.removeItem("festivalOffer")
+
+alert("Offer Removed")
+
+}
+
+/* LOAD PRODUCTS */
+
+showProducts()
+
+</script>
+
+</body>
+</html>
