@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<style>
+body{background:#111;color:white;font-family:Arial;text-align:center}
+input,select,button{padding:10px;margin:5px;border-radius:5px}
+button{background:red;color:white;border:none;cursor:pointer}
+.product{border:1px solid white;padding:10px;margin:10px;position:relative;}
+</style>
+</head>
+<body>
+
+<h1>Admin Panel</h1>
+
+<h2>Add Product</h2>
+<input id="name" placeholder="Product Name"><br>
+<input id="actualPrice" placeholder="Actual Price"><br>
+<input id="discountPrice" placeholder="Discount Price (optional)"><br>
+<select id="category">
+<option value="sneakers">Sneakers</option>
+<option value="shoes">Shoes</option>
+<option value="sports">Sports Shoes</option>
+<option value="premium">Premium Shoes</option>
+</select><br>
+<select id="rating">
+<option value="5">⭐⭐⭐⭐⭐</option>
+<option value="4">⭐⭐⭐⭐</option>
+<option value="3">⭐⭐⭐</option>
+<option value="2">⭐⭐</option>
+<option value="1">⭐</option>
+</select><br>
+<input type="file" id="image"><br>
+<button onclick="addProduct()">Add Product</button>
+
+<hr>
+
+<h2>Festival Offer</h2>
+<input id="offerName" placeholder="Festival Name"><br>
+<input id="offerPercent" placeholder="Discount %"><br>
+<input id="minPrice" placeholder="Min Price"><br>
+<input id="maxPrice" placeholder="Max Price"><br>
+<label>Offer End Date & Time</label><br>
+<input type="datetime-local" id="offerEnd"><br>
+<button onclick="setOffer()">Activate Offer</button>
+<button onclick="removeOffer()">Remove Offer</button>
+
+<hr>
+
+<h2>All Products</h2>
+<div id="productList"></div>
+
+<script>
+const token="YOUR_GITHUB_TOKEN"
+const owner="YOUR_GITHUB_USERNAME"
+const repo="YOUR_REPOSITORY_NAME"
+const branch="main"
+
+async function addProduct(){
+let name=document.getElementById("name").value
+let actualPrice=document.getElementById("actualPrice").value
+let discountPrice=document.getElementById("discountPrice").value
+let category=document.getElementById("category").value
+let rating=document.getElementById("rating").value
+let file=document.getElementById("image").files[0]
+
+if(!name || !actualPrice || !file){alert("Fill required fields"); return}
+
+let base64=await toBase64(file)
+let imageName=Date.now()+"_"+file.name
+
+await uploadImage(base64,imageName)
+let data=await getJSON()
+let products=[],sha=null
+if(data){products=JSON.parse(atob(data.content)); sha=data.sha}
+
+products.push({
+name:name,
+actualPrice:actualPrice,
+discountPrice:discountPrice,
+category:category,
+rating:rating,
+image:`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/images/${imageName}`,
+time:Date.now()
+})
+
+await updateJSON(products,sha)
+alert("Product Added Successfully")
+showProducts()
+}
+
+// helpers
+function toBase64(file){return new Promise((resolve,reject)=>{let reader=new FileReader(); reader.readAsDataURL(file); reader.onload=()=>resolve(reader.result.split(",")[1]); reader.onerror=error=>reject(error)})}
+async function uploadImage(base64,imageName){await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/images/${imageName}`,{method:"PUT",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({message:"upload product image",content:base64,branch:branch})})}
+async function getJSON(){let res=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/makhna.json`,{headers:{"Authorization":"Bearer "+token}}); if(res.status===404) return null; return await res.json()}
+async function updateJSON(products,sha){let content=btoa(JSON.stringify(products,null,2)); await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/makhna.json`,{method:"PUT",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({message:"update products",content:content,sha:sha,branch:branch})})}
+
+// show all products
+async function showProducts(){
+let data=await getJSON()
+let products=[]
+if(data){products=JSON.parse(atob(data.content))}
+let box=document.getElementById("productList")
+box.innerHTML=""
+products.forEach((p,i)=>{
+box.innerHTML+=`<div class="product">
+<img src="${p.image}" width="80"><h3>${p.name}</h3>
+<p>Actual: ₹${p.actualPrice}</p>
+<p>Discount: ${p.discountPrice||'None'}</p>
+<p>Category: ${p.category}</p>
+<p>Rating: ${'⭐'.repeat(p.rating)}</p>
+<button onclick="deleteProduct(${i})">Delete</button>
+</div>`
+})
+}
+
+async function deleteProduct(i){
+let data=await getJSON()
+let products=[]
+let sha=null
+if(data){products=JSON.parse(atob(data.content)); sha=data.sha}
+products.splice(i,1)
+await updateJSON(products,sha)
+showProducts()
+}
+
+// Festival offer
+function setOffer(){
+let name=document.getElementById("offerName").value
+let percent=Number(document.getElementById("offerPercent").value)
+let min=Number(document.getElementById("minPrice").value)
+let max=Number(document.getElementById("maxPrice").value)
+let endDate=document.getElementById("offerEnd").value
+if(!name||!percent||!endDate){alert("Fill Offer Details"); return}
+let offer={name:name,percent:percent,min:min,max:max,endTime:new Date(endDate).getTime()}
+localStorage.setItem("festivalOffer",JSON.stringify(offer))
+alert("Festival Offer Activated")
+}
+
+function removeOffer(){localStorage.removeItem("festivalOffer"); alert("Offer Removed")}
+
+// initial load
+showProducts()
+</script>
+
+</body>
+</html>
